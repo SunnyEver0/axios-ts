@@ -1,15 +1,18 @@
 /**
  * Created by apple on 2019/6/23.
  */
-import { AxiosRequestConfig } from './types'
+import { AxiosRequestConfig, AxiosPromise, AxiosResponse } from './types'
 import xhr from './xhr'
-import { transformRequest } from './helpers/data'
+import { transformRequest, transformResponse } from './helpers/data'
 import { buildURL } from './helpers/url'
 import { processHeaders} from './helpers/headers';
 
-function axios(config: AxiosRequestConfig) {
-  processConfig(config)
-  xhr(config)
+function axios(config: AxiosRequestConfig): AxiosPromise {
+  processConfig(config);
+  return xhr(config).then(res => {
+    return transformResponseData(res);
+  });
+  // return xhr(config);
 }
 
 function processConfig(config: AxiosRequestConfig): void {
@@ -19,7 +22,7 @@ function processConfig(config: AxiosRequestConfig): void {
 }
 
 function transformURL(config: AxiosRequestConfig): string {
-  const { url, params } = config
+  const { url, params } = config;
   return buildURL(url, params)
 }
 
@@ -30,6 +33,11 @@ function transformRuquestData(config: AxiosRequestConfig): any {
 function transformHeaders(config: AxiosRequestConfig): any {
   const { headers = {}, data } = config;
   return processHeaders(headers, data);
+}
+
+function transformResponseData(res: AxiosResponse): any {
+  res.data = transformResponse(res.data);
+  return res;
 }
 
 export default axios
